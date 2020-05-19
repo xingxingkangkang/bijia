@@ -8,6 +8,6 @@ module.exports = {
   },
   assetsDir: "static",
   devServer: {
-    proxy: "http://localhost:8000"
+    proxy: "http://47.112.216.17:9091"
   }
 };

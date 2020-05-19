@@ -33,10 +33,6 @@ export default {
   mounted() {
     let isLogin = this.$store.state.isLogin;
     if (isLogin == false) {
-      this.$notification["error"]({
-        message: "您还未登录",
-        description: "请先登录，登录后才可以访问个人信息页"
-      });
       // this.$router.push("/user");
     }
   },

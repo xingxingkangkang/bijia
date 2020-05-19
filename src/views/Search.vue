@@ -12,7 +12,6 @@
         :pagination="pagination"
         :data-source="listData"
       >
-        <div slot="footer"><b>ant design vue</b> footer part</div>
         <a-list-item slot="renderItem" key="item.title" slot-scope="item">
           <template v-for="{ type, text } in actions" slot="actions">
             <span :key="type">
@@ -20,17 +19,26 @@
               {{ text }}
             </span>
           </template>
-          <img
-            slot="extra"
-            width="272"
-            alt="logo"
-            src="https://gw.alipayobjects.com/zos/rmsportal/mqaQswcyDLcXyDKnZfES.png"
-          />
+          <img slot="extra" width="88" alt="logo" :src="item.PhotoUrl" />
           <a-list-item-meta :description="item.description">
-            <a slot="title" :href="item.href">{{ item.title }}</a>
+            <a
+              @click="like(item.Eid, item.GoodID)"
+              slot="title"
+              :href="item.href"
+              >{{ item.title }}</a
+            >
             <a-avatar slot="avatar" :src="item.avatar" />
           </a-list-item-meta>
-          {{ item.content }}
+          <a-button
+            icon="search"
+            type="primary"
+            @click="onClick(item.Eid, item.GoodID)"
+          >
+            点击查看价格波动图
+          </a-button>
+          <a-button type="primary" icon="search">
+            Search
+          </a-button>
         </a-list-item>
       </a-list>
     </div>
@@ -38,18 +46,9 @@
 </template>
 <script>
 import axios from "axios";
+import Jd from "../assets/Jd.png";
+import Taobao from "../assets/Taobao.png";
 let listData = [];
-for (let i = 0; i < 23; i++) {
-  listData.push({
-    href: "https://www.antdv.com/",
-    title: `ant design vue part ${i}`,
-    avatar: "https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png",
-    description:
-      "Ant Design, a design language for background applications, is refined by Ant UED Team.",
-    content:
-      "We supply a series of design principles, practical patterns and high quality design resources (Sketch and Axure), to help people create their product prototypes beautifully and efficiently."
-  });
-}
 
 export default {
   data() {
@@ -64,7 +63,7 @@ export default {
       actions: [
         { type: "star-o", text: "156" },
         { type: "like-o", text: "156" },
-        { type: "message", text: "2" }
+        { type: "rocket", text: "2" }
       ],
       goods: this.$route.params.goods
     };
@@ -80,15 +79,57 @@ export default {
     }
   },
   methods: {
+    like: function(Eid, GoodID) {
+      axios
+        .get("/goods/like", {
+          params: {
+            eid: Eid,
+            gid: GoodID
+          }
+        })
+        .then(() => {
+          console.log("OK");
+        });
+    },
+    onClick: function(Eid, GoodID) {
+      this.$router.push("/bijia/detail/" + GoodID + "/" + Eid);
+    },
     init() {
       axios
-        .get("/bijia/search", {
+        .get("/goods/search", {
           params: {
-            name: this.$route.params.goods
+            search: this.$route.params.goods
           }
         })
         .then(res => {
+          let len = listData.length;
+          for (let i = 0; i < len; i++) {
+            listData.pop();
+          }
           console.log(res);
+          let goods = res.data.result;
+          let size = res.data.result.length;
+          for (let i = 0; i < size; i++) {
+            let Icon = Jd;
+            if (goods[i].Eid == 1) {
+              Icon = Taobao;
+            }
+            listData.push({
+              href: goods[i].Url,
+              title: goods[i].Title,
+              PhotoUrl: goods[i].PhotoUrl,
+              avatar: Icon,
+              Eid: goods[i].Eid,
+              GoodID: goods[i].GoodID,
+              description:
+                "订单数：" +
+                goods[i].OrderCount +
+                ";    价格：" +
+                goods[i].Price +
+                "元;",
+              content: "empty"
+            });
+          }
         });
     }
   }
